@@ -87,14 +87,30 @@ def process_one_tag(tag_id, one_tag_df):
         tempUT_list.append(float(key))
         adc_list.append(tag_means['curADC'])
 
-    plt.plot(tempUT_list, temp_list, 'b.')
-    plt.plot(tempUT_list, adc_list, 'r+')
-    plt.xlabel("Temp. Under Test")
-    plt.ylabel("Real Temp.")
+
+    # plot 2 y axises on one x axis (temperature)
+    fig, ax1 = plt.subplots()
+
+    color = 'tab:red'
+    ax1.set_xlabel('Temperature Under Test')
+    ax1.set_ylabel('Real Temperature', color=color)
+    ax1.plot(tempUT_list, temp_list, 'r.' )
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.grid(color='tab:green', axis='both', which='both')
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    color = 'tab:blue'
+    ax2.set_ylabel('ADC', color=color)  # we already handled the x-label with ax1
+    ax2.plot(tempUT_list, adc_list, 'b+')
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.grid(color=color, axis='y', which='both')
+    #fig.tight_layout(pad=1)  # otherwise the right y-label is slightly clipped
     plt.title(tag_id)
-    plt.grid(axis='both')
+
     plt.savefig("output/" + tag_id + ".eps", format = 'eps')
     plt.clf()
+
 
 
 
