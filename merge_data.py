@@ -2,11 +2,14 @@ from os import listdir
 from os.path import isfile, join
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 
 # Read line by line, append each line with target temperature
-# put them in pandas DataFrame
+# put them in pandas DataFrame and return
+
 
 def build_data_frame():
     df = pd.DataFrame()
@@ -25,33 +28,85 @@ def build_data_frame():
             else:
                 break
         f.close()
-    df=pd.DataFrame(summary, columns=["day", "time", "tagID", "base", "refADC", "curADC", "curTemp", "tempUT"])
+
+    df = pd.DataFrame(summary, columns=["day", "time", "tagID", "base", "refADC", "curADC", "curTemp", "tempUT"])
+    numeric_cols = ["base", "refADC", "curADC", "curTemp", "tempUT"]
+    df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
+    df.sort_values(by=['tagID', 'curTemp', "day", "time"], inplace=True)
     return df
 
 
-def draw_tag(tag_id, df):
-    oneTag = df[df["tagID"] == tag_id]
-    print(oneTag)
 
 
-# return a list of partitioned tempUT
+# split_tempUT()
+# return a dict of partitioned tempUT
+# input: dataframe of a tag ID
+# output: dict of a tag, key is temperature, value is
+#         the related dataframe
+
 def split_tempUT(df):
-    # build tempUT list
+    # build 'temperature under test' list of a tag
     tempUT = df["tempUT"].unique().tolist()
-    final_list = list()
+    d = dict()
     for t in tempUT:
         # select temperature from dataframe
         oneTemp = df[df["tempUT"] == t]
-        print(oneTemp)
-        final_list.append(oneTemp)
-    return final_list
+        #print(oneTemp)
+        d[t] = oneTemp
+    return d
+
+
+# get_means(df)
+# input dataframe of a tag_id on a single temperature UT
+# output a series with means of 'curADC' and 'curTemp' index
+# like:
+#         base         23.000000
+#         refADC     1301.000000
+#         curADC     1369.666667
+#         curTemp     379.333333
+#         tempUT       40.100000
+
+def get_means(df):
+    temp_list = df[1:4]
+    m = temp_list.mean()
+    #print("mean = {}, meanADC = {}, meanTemp ={}".format(m, m['curADC'], m['curTemp']))
+    return m
+
+
+
+def process_one_tag(tag_id, one_tag_df):
+    d = split_tempUT(one_tag_df)
+
+    tempUT_list = list()
+    temp_list = list()
+    adc_list = list()
+    for key in list(d.keys()):
+        tag_means = get_means(d[key])
+        #print("tUT = {}, tMean = {}".format(key, f))
+        temp_list.append(tag_means['curTemp'])
+        tempUT_list.append(float(key))
+        adc_list.append(tag_means['curADC'])
+
+    plt.plot(tempUT_list, temp_list, 'b.')
+    plt.plot(tempUT_list, adc_list, 'r+')
+    plt.xlabel("Temp. Under Test")
+    plt.ylabel("Real Temp.")
+    plt.title(tag_id)
+    plt.grid(axis='both')
+    plt.savefig("output/" + tag_id + ".eps", format = 'eps')
+    plt.clf()
+
+
 
 
 df = build_data_frame()
+print(df)
+
+# build tag list
 tagID = df["tagID"].unique().tolist()
 
-# select a tag
-one_tag_df = df[df["tagID"] == tagID[0]]
-split_tempUT(one_tag_df)
-
-#draw_tag('8680000006', df)
+# iterate tag list
+for tag_id in tagID:
+    # select from dataframe of each tag ID
+    one_tag_df = df[ df["tagID"] == tag_id ]
+    process_one_tag(tag_id, one_tag_df)
