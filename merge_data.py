@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
+outputDir="output/"
 
 # Read line by line, append each line with target temperature
 # put them in pandas DataFrame and return
@@ -31,8 +31,10 @@ def build_data_frame():
 
     df = pd.DataFrame(summary, columns=["day", "time", "tagID", "adcBase", "refADC", "curADC", "curTemp", "tempUT"])
     numeric_cols = ["adcBase", "refADC", "curADC", "curTemp", "tempUT"]
+    # change strings to numeric values
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
     df.sort_values(by=['tagID', 'curTemp', "day", "time"], inplace=True)
+
     return df
 
 
@@ -89,6 +91,16 @@ def process_one_tag(tag_id, one_tag_df):
         tempUT_list.append(float(key))
         adc_list.append(tag_means['curADC'])
 
+    # save to csv before plotting
+    mean_df = pd.DataFrame( {
+        'tempUT': tempUT_list,
+        'curADC': adc_list,
+        'curTemp': temp_list } )
+
+    mean_df.to_csv(outputDir + tag_id + '_mean.csv', index=False)
+
+
+    # plot
     fig, ax1 = plt.subplots()
     color = 'tab:red'
     ax1.set_xlabel('Temperature Under Test')
@@ -107,7 +119,7 @@ def process_one_tag(tag_id, one_tag_df):
         ax2.grid(color=color, axis='y', which='both')
 
     plt.title(tag_id)
-    plt.savefig("output/" + tag_id + ".eps", format = 'eps')
+    plt.savefig(outputDir + tag_id + ".pdf", format = 'pdf')
     plt.clf()
 
 
@@ -124,4 +136,7 @@ tagID = df["tagID"].unique().tolist()
 for tag_id in tagID:
     # select from dataframe of each tag ID
     one_tag_df = df[ df["tagID"] == tag_id ]
+
+    # process each tag, save to csv by the way
+    one_tag_df.to_csv(outputDir + tag_id + '_raw.csv', index=False)
     process_one_tag(tag_id, one_tag_df)
