@@ -3,13 +3,12 @@ from os.path import isfile, join
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 
-outputDir="output/"
 
 # Read line by line, append each line with target temperature
 # put them in pandas DataFrame and return
-
 
 def build_data_frame():
     df = pd.DataFrame()
@@ -124,6 +123,13 @@ def process_one_tag(tag_id, one_tag_df):
 
 
 
+outputDir = "output/"
+RegressionReport = "outputDir" + "RegressionReport.txt"
+
+if os.path.exists(RegressionReport):
+  os.remove(RegressionReport)
+else:
+  print(RegressionReport + " does not exist")
 
 
 df = build_data_frame()
