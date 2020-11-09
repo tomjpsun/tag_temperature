@@ -120,18 +120,43 @@ def process_one_tag(tag_id, one_tag_df):
 
     plt.title(tag_id)
     plt.savefig(outputDir + tag_id + ".pdf", format = 'pdf')
-    plt.clf()
+    plt.close()
 
 
 
 def regression_report(tagList):
     print(RegressionReport)
     with open(RegressionReport, 'w') as f:
-        for tag in tagList:
+        for tag_id in tagList:
             df = pd.read_csv(outputDir + tag_id + '_mean.csv')
             reg = linear_model.LinearRegression()
             reg.fit(df[['tempUT']], df['curADC'])
-            f.write('tag {}: co {}, intr {}\n'.format(tag, reg.coef_, reg.intercept_))
+            f.write('tag {}: co {}, intr {}\n'.format(tag_id, reg.coef_, reg.intercept_))
+
+
+
+def plot_all(tagList):
+    legends = list()
+    # set plot size (such that legend won't block the drawed line)
+    plt.rcParams["figure.figsize"] = (10,10)
+    # drop out 1st tag: 0201000001 since it has no data
+    for tag_id in tagList[1:]:
+        # read mean data for each tag
+        df = pd.read_csv(outputDir + tag_id + '_mean.csv')
+        # plot each tag, and collect its legend
+        legend, = plt.plot(df['tempUT'].tolist(), df['curADC'].tolist(), label=tag_id)
+        legends.append(legend)
+
+    plt.xticks(np.arange(-20, 50, step=5))
+    plt.yticks(np.arange(1000, 1500, step=25))
+    plt.xlabel('Temperature Under Test')
+    plt.ylabel('ADC')
+    plt.grid(axis='both', which='both')
+    plt.title('All Tags')
+    plt.legend(handles=legends)
+
+    plt.savefig(outputDir + 'all_tags.pdf', format='pdf')
+    plt.close()
 
 
 
@@ -140,6 +165,7 @@ df = build_data_frame()
 
 # build tag list
 tagList = df["tagID"].unique().tolist()
+print(tagList)
 
 # iterate tag list
 for tag_id in tagList:
@@ -152,3 +178,7 @@ for tag_id in tagList:
 
 # regression report
 regression_report(tagList)
+
+# plot all together
+print('plot_all()\n')
+plot_all(tagList)
