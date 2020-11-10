@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn import linear_model
 
 outputDir = "output/"
-RegressionReport = outputDir + "RegressionReport.txt"
+RegressionReport = outputDir + "RegressionReport.csv"
 
 # Read line by line, append each line with target temperature
 # put them in pandas DataFrame and return
@@ -131,14 +131,15 @@ def process_one_tag(tag_id, one_tag_df):
 
 def regression_report(tagList):
     print(RegressionReport)
-    with open(RegressionReport, 'w') as f:
-        for tag_id in tagList:
-            df = pd.read_csv(outputDir + tag_id + '_mean.csv')
-            reg = linear_model.LinearRegression()
-            reg.fit( df[['curADC']], df['tempUT'])
-            f.write('tag {}: co {}, intr {}\n'.format(tag_id, reg.coef_, reg.intercept_))
+    regression_df =  pd.DataFrame(columns=['tag_id', 'coef', 'intercept'])
+    for i, tag_id in enumerate(tagList):
+        df = pd.read_csv(outputDir + tag_id + '_mean.csv')
+        reg = linear_model.LinearRegression()
+        reg.fit( df[['curADC']], df['tempUT'])
+        regression_df.loc[i] = list([tag_id, reg.coef_[0], reg.intercept_])
 
-
+    regression_df.to_csv(RegressionReport, sep=' ')
+    return regression_df
 
 def plot_all(tagList):
     legends = list()
@@ -214,10 +215,11 @@ for tag_id in tagList:
     process_one_tag(tag_id, one_tag_df)
 
 # regression report
-regression_report(tagList)
+regression_df = regression_report(tagList)
 
 # plot all together
 plot_all(tagList)
-# get the ref ADC on degree zero of ref_tag_id (index 22)
+# plot all ADC with ref_tag_id as standard(index 22 means degree 0)
 plot_all_align_index(tagList, '0401000003', 22)
+# plot all ADC with ref_tag_id as standard(index 42 means degree 20)
 plot_all_align_index(tagList, '0401000003', 42)
