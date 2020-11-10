@@ -130,7 +130,7 @@ def regression_report(tagList):
         for tag_id in tagList:
             df = pd.read_csv(outputDir + tag_id + '_mean.csv')
             reg = linear_model.LinearRegression()
-            reg.fit(df[['tempUT']], df['curADC'])
+            reg.fit( df[['curADC']], df['tempUT'])
             f.write('tag {}: co {}, intr {}\n'.format(tag_id, reg.coef_, reg.intercept_))
 
 
@@ -138,7 +138,7 @@ def regression_report(tagList):
 def plot_all(tagList):
     legends = list()
     # set plot size (such that legend won't block the drawed line)
-    plt.rcParams["figure.figsize"] = (8,5)
+    plt.rcParams["figure.figsize"] = (9 ,5)
     # drop out 1st tag: 0201000001 since it has no data
     for tag_id in tagList[1:]:
         # read mean data for each tag
@@ -161,18 +161,18 @@ def plot_all(tagList):
 
 
 
-def plot_all_align_zero(tagList, ref_tag_id):
+def plot_all_align_index(tagList, ref_tag_id, align_index):
     legends = list()
     # set plot size (such that legend won't block the drawed line)
-    plt.rcParams["figure.figsize"] = (8, 5)
-    # get the ref ADC on degree zero of ref_tag_id (index 22)
+    plt.rcParams["figure.figsize"] = (9, 5)
+    # get the ref ADC on degree zero of ref_tag_id (at given align_index)
     refDF = pd.read_csv(outputDir + ref_tag_id + '_mean.csv')
-    ref_adc = refDF.at[22, 'curADC']
+    ref_adc = refDF.at[align_index, 'curADC']
     # drop out 1st tag: 0201000001 since it has no data
     for tag_id in tagList[1:]:
         # read mean data for each tag
         df = pd.read_csv(outputDir + tag_id + '_mean.csv')
-        delta = df.at[22, 'curADC'] - ref_adc
+        delta = df.at[align_index, 'curADC'] - ref_adc
         df['curADC'] -= delta
         # plot each tag, and collect its legend
         legend, = plt.plot(df['tempUT'].tolist(), df['curADC'].tolist(), label=tag_id)
@@ -186,7 +186,7 @@ def plot_all_align_zero(tagList, ref_tag_id):
     plt.title('All Tags')
     plt.legend(handles=legends)
 
-    plt.savefig(outputDir + 'all_tags_align.pdf', format='pdf')
+    plt.savefig(outputDir + 'all_tags_align_' + str(align_index) + '.pdf', format='pdf')
     plt.close()
 
 
@@ -212,4 +212,6 @@ regression_report(tagList)
 
 # plot all together
 plot_all(tagList)
-plot_all_align_zero(tagList, '0401000003')
+# get the ref ADC on degree zero of ref_tag_id (index 22)
+plot_all_align_index(tagList, '0401000003', 22)
+plot_all_align_index(tagList, '0401000003', 42)
