@@ -138,7 +138,7 @@ def regression_report(tagList):
 def plot_all(tagList):
     legends = list()
     # set plot size (such that legend won't block the drawed line)
-    plt.rcParams["figure.figsize"] = (10,10)
+    plt.rcParams["figure.figsize"] = (8,5)
     # drop out 1st tag: 0201000001 since it has no data
     for tag_id in tagList[1:]:
         # read mean data for each tag
@@ -156,6 +156,37 @@ def plot_all(tagList):
     plt.legend(handles=legends)
 
     plt.savefig(outputDir + 'all_tags.pdf', format='pdf')
+    plt.close()
+
+
+
+
+def plot_all_align_zero(tagList, ref_tag_id):
+    legends = list()
+    # set plot size (such that legend won't block the drawed line)
+    plt.rcParams["figure.figsize"] = (8, 5)
+    # get the ref ADC on degree zero of ref_tag_id (index 22)
+    refDF = pd.read_csv(outputDir + ref_tag_id + '_mean.csv')
+    ref_adc = refDF.at[22, 'curADC']
+    # drop out 1st tag: 0201000001 since it has no data
+    for tag_id in tagList[1:]:
+        # read mean data for each tag
+        df = pd.read_csv(outputDir + tag_id + '_mean.csv')
+        delta = df.at[22, 'curADC'] - ref_adc
+        df['curADC'] -= delta
+        # plot each tag, and collect its legend
+        legend, = plt.plot(df['tempUT'].tolist(), df['curADC'].tolist(), label=tag_id)
+        legends.append(legend)
+
+    plt.xticks(np.arange(-20, 50, step=5))
+    plt.yticks(np.arange(1000, 1500, step=25))
+    plt.xlabel('Temperature Under Test')
+    plt.ylabel('ADC')
+    plt.grid(axis='both', which='both')
+    plt.title('All Tags')
+    plt.legend(handles=legends)
+
+    plt.savefig(outputDir + 'all_tags_align.pdf', format='pdf')
     plt.close()
 
 
@@ -180,5 +211,5 @@ for tag_id in tagList:
 regression_report(tagList)
 
 # plot all together
-print('plot_all()\n')
 plot_all(tagList)
+plot_all_align_zero(tagList, '0401000003')
