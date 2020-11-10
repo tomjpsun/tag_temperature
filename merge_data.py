@@ -31,6 +31,11 @@ def build_data_frame():
 
     df = pd.DataFrame(summary, columns=["day", "time", "tagID", "adcBase", "refADC", "curADC", "curTemp", "tempUT"])
     numeric_cols = ["adcBase", "refADC", "curADC", "curTemp", "tempUT"]
+
+    # drop out problematic tags
+    problem_tags = ['0201000001', '0701000006']
+    df = df[~df['tagID'].isin(problem_tags)]
+
     # change strings to numeric values
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce', axis=1)
     df.sort_values(by=['tagID', 'curTemp', "day", "time"], inplace=True)
@@ -140,7 +145,7 @@ def plot_all(tagList):
     # set plot size (such that legend won't block the drawed line)
     plt.rcParams["figure.figsize"] = (9 ,5)
     # drop out 1st tag: 0201000001 since it has no data
-    for tag_id in tagList[1:]:
+    for tag_id in tagList:
         # read mean data for each tag
         df = pd.read_csv(outputDir + tag_id + '_mean.csv')
         # plot each tag, and collect its legend
@@ -168,6 +173,7 @@ def plot_all_align_index(tagList, ref_tag_id, align_index):
     # get the ref ADC on degree zero of ref_tag_id (at given align_index)
     refDF = pd.read_csv(outputDir + ref_tag_id + '_mean.csv')
     ref_adc = refDF.at[align_index, 'curADC']
+
     # drop out 1st tag: 0201000001 since it has no data
     for tag_id in tagList[1:]:
         # read mean data for each tag
