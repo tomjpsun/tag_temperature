@@ -176,8 +176,8 @@ def plot_all_align_index(tagList, ref_tag_id, align_index):
     refDF = pd.read_csv(outputDir + ref_tag_id + '_mean.csv')
     ref_adc = refDF.at[align_index, 'curADC']
 
-    # drop out 1st tag: 0201000001 since it has no data
-    for tag_id in tagList[1:]:
+
+    for tag_id in tagList:
         # read mean data for each tag
         df = pd.read_csv(outputDir + tag_id + '_mean.csv')
         delta = df.at[align_index, 'curADC'] - ref_adc
