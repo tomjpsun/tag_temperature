@@ -7,6 +7,7 @@ from sklearn import linear_model
 
 outputDir = "output/"
 RegressionReport = outputDir + "RegressionReport.csv"
+RegressionMean = outputDir + "RegressionMean.csv"
 
 # Read line by line, append each line with target temperature
 # put them in pandas DataFrame and return
@@ -216,6 +217,8 @@ for tag_id in tagList:
 
 # regression report
 regression_df = regression_report(tagList)
+regression_mean = regression_df.mean(axis = 0)
+regression_mean.to_csv(RegressionMean)
 
 # plot all together
 plot_all(tagList)
