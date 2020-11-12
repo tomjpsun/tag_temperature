@@ -202,7 +202,7 @@ def plot_all_align_index(tagList, ref_tag_id, align_index):
 
 
 
-def plot_all_align_ref_temp(tagList, regression_df, ref_temp):
+def plot_all_align_adc(tagList, regression_df, aligned_adc):
     legends = list()
     std = regression_df.mean(axis = 0)
     # set plot size (such that legend won't block the drawed line)
@@ -210,15 +210,15 @@ def plot_all_align_ref_temp(tagList, regression_df, ref_temp):
 
     #refDF = pd.read_csv(outputDir + ref_tag_id + '_mean.csv')
     #ref_adc = refDF.at[align_index, 'curADC']
-    x = np.arange(-20, 40)
-    y = (x - std.intercept)/std.coef
+    x = np.arange(1100, 1500, step=5)
+    y = x * std.coef + std.intercept
     legend, = plt.plot(x, y, 'r.', label='STD')
     legends.append(legend)
 
     for i in range(0, 10):
         # read mean data for each tag
         tag_regressor = regression_df.iloc[i]
-        y = (x - tag_regressor.intercept) / tag_regressor.coef
+        y = x * tag_regressor.coef + tag_regressor.intercept
         #df = pd.read_csv(outputDir + tag_id + '_mean.csv')
         #delta = df.at[align_index, 'curADC'] - ref_adc
         #df['curADC'] -= delta
@@ -226,15 +226,15 @@ def plot_all_align_ref_temp(tagList, regression_df, ref_temp):
         legend, = plt.plot(x, y, label=tag_regressor.tag_id)
         legends.append(legend)
 
-    plt.xticks(np.arange(-20, 50, step=5))
-    plt.yticks(np.arange(1000, 1500, step=25))
-    plt.xlabel('Temperature Under Test')
-    plt.ylabel('ADC')
+    plt.yticks(np.arange(-20, 50, step=5))
+    plt.xticks(np.arange(1100, 1500, step=25))
+    plt.ylabel('Temperature Under Test')
+    plt.xlabel('ADC')
     plt.grid(axis='both', which='both')
     plt.title('All Tags')
     plt.legend(handles=legends)
 
-    plt.savefig(outputDir + 'all_tags_align_ref_temp_' + str(ref_temp) + '.pdf', format='pdf')
+    plt.savefig(outputDir + 'all_tags_align_adc_' + str(aligned_adc) + '.pdf', format='pdf')
     plt.close()
 
 
@@ -264,5 +264,6 @@ regression_df = regression_report(tagList)
 plot_all(tagList)
 # plot all ADC with ref_tag_id as standard(index 22 means degree 0)
 plot_all_align_index(tagList, '0401000003', 22)
-# plot all ADC with ref_tag_id as standard(index 42 means degree 20)
-plot_all_align_ref_temp(tagList, regression_df, 42)
+# plot all Tags aligned to given adc
+aligned_adc = 1280
+plot_all_align_adc(tagList, regression_df, aligned_adc)
