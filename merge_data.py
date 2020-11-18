@@ -139,7 +139,7 @@ def regression_report(tagList):
         reg.fit( df[['curADC']], df['tempUT'])
         regression_df.loc[i] = list([tag_id, reg.coef_[0], reg.intercept_])
 
-    regression_df.to_csv(RegressionReport, sep=' ')
+    regression_df.to_csv(RegressionReport)
     return regression_df
 
 
@@ -240,7 +240,7 @@ def plot_all_align_adc(tagList, regression_df, aligned_adc):
 
 
 df = build_data_frame()
-# print(df)
+df.to_csv(outputDir + "all_raw.csv")
 
 # build tag list
 tagList = df["tagID"].unique().tolist()
@@ -257,8 +257,8 @@ for tag_id in tagList:
 
 # regression report
 regression_df = regression_report(tagList)
-#regression_mean = regression_df.mean(axis = 0)
-#regression_mean.to_csv(RegressionMean)
+regression_mean = regression_df.mean(axis = 0)
+regression_mean.to_csv(RegressionMean)
 
 # plot all together
 plot_all(tagList)
