@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 from sklearn import linear_model
 
 outputDir = "output/"
-RegressionReport = outputDir + "RegressionReport.csv"
 RegressionMean = outputDir + "RegressionMean.csv"
+
+def regression_report_name(start = 0, stop = 62):
+    return outputDir + 'RegressionReport_' + str(start) + '_' + str(stop) + '.csv'
 
 # Read line by line, append each line with target temperature
 # put them in pandas DataFrame and return
@@ -130,16 +132,19 @@ def process_one_tag(tag_id, one_tag_df):
 
 
 
-def regression_report(tagList):
-    print(RegressionReport)
+def regression_report(tagList, start=0, stop=62):
+    result_filename = regression_report_name(start, stop)
+    print(result_filename)
     regression_df =  pd.DataFrame(columns=['tag_id', 'coef', 'intercept'])
     for i, tag_id in enumerate(tagList):
-        df = pd.read_csv(outputDir + tag_id + '_mean.csv')
+        one_tag_df = pd.read_csv(outputDir + tag_id + '_mean.csv')
+        df = one_tag_df.take([start, stop])
+        print("Tag mean dataframe:{}, take rang ({},{})".format(tag_id, start, stop))
         reg = linear_model.LinearRegression()
         reg.fit( df[['curADC']], df['tempUT'])
         regression_df.loc[i] = list([tag_id, reg.coef_[0], reg.intercept_])
 
-    regression_df.to_csv(RegressionReport)
+    regression_df.to_csv(result_filename)
     return regression_df
 
 
