@@ -202,7 +202,7 @@ def plot_all_align_index(tagList, ref_tag_id, align_index):
 
 
 
-def plot_all_align_adc(tagList, regression_df, aligned_adc):
+def plot_all_with_std(tagList, regression_df):
     legends = list()
     std = regression_df.mean(axis = 0)
     # set plot size (such that legend won't block the drawed line)
@@ -234,7 +234,7 @@ def plot_all_align_adc(tagList, regression_df, aligned_adc):
     plt.title('All Tags')
     plt.legend(handles=legends)
 
-    plt.savefig(outputDir + 'all_tags_align_adc_' + str(aligned_adc) + '.pdf', format='pdf')
+    plt.savefig(outputDir + 'all_tags_with_std.pdf', format='pdf')
     plt.close()
 
 
@@ -266,4 +266,4 @@ plot_all(tagList)
 plot_all_align_index(tagList, '0401000003', 22)
 # plot all Tags aligned to given adc
 aligned_adc = 1280
-plot_all_align_adc(tagList, regression_df, aligned_adc)
+plot_all_with_std(tagList, regression_df)
